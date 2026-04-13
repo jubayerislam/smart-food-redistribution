@@ -29,12 +29,25 @@
                     <a href="{{ route('donations.index') }}" class="hover:text-emerald-600 transition {{ request()->routeIs('donations.index') ? 'text-emerald-600' : 'text-gray-600' }}">Marketplace</a>
                     <a href="{{ route('impact') }}" class="hover:text-emerald-600 transition {{ request()->routeIs('impact') ? 'text-emerald-600' : 'text-gray-600' }}">Our Impact</a>
                     @auth
-                        <a href="{{ route('dashboard') }}" class="hover:text-emerald-600 transition {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-gray-600' }}">Dashboard</a>
+                        @if(Auth::user()->role === 'admin')
+                            <a href="{{ route('admin.index') }}" class="hover:text-emerald-600 transition {{ request()->routeIs('admin.*') ? 'text-emerald-600' : 'text-gray-600' }}">Admin</a>
+                        @else
+                            <a href="{{ route('dashboard') }}" class="hover:text-emerald-600 transition {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-gray-600' }}">Dashboard</a>
+                        @endif
+                        <a href="{{ route('notifications.index') }}" class="hover:text-emerald-600 transition {{ request()->routeIs('notifications.*') ? 'text-emerald-600' : 'text-gray-600' }}">Notifications</a>
                     @endauth
                 </div>
 
                 <div class="flex items-center gap-4">
                     @auth
+                        <a href="{{ route('notifications.index') }}" class="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm ring-1 ring-gray-200 transition hover:text-emerald-600">
+                            <i class="fas fa-bell"></i>
+                            @if(Auth::user()->unreadNotifications()->count() > 0)
+                                <span class="absolute -right-1 -top-1 min-w-5 rounded-full bg-rose-500 px-1.5 py-0.5 text-center text-[10px] font-bold leading-none text-white">
+                                    {{ Auth::user()->unreadNotifications()->count() }}
+                                </span>
+                            @endif
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-full font-semibold hover:bg-gray-300 transition text-sm">
@@ -61,7 +74,12 @@
                 <a href="{{ route('donations.index') }}" class="block font-bold text-gray-600">Marketplace</a>
                 <a href="{{ route('impact') }}" class="block font-bold text-gray-600">Our Impact</a>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block font-bold text-gray-600">Dashboard</a>
+                    @if(Auth::user()->role === 'admin')
+                        <a href="{{ route('admin.index') }}" class="block font-bold text-gray-600">Admin</a>
+                    @else
+                        <a href="{{ route('dashboard') }}" class="block font-bold text-gray-600">Dashboard</a>
+                    @endif
+                    <a href="{{ route('notifications.index') }}" class="block font-bold text-gray-600">Notifications</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="block font-bold text-rose-600">Sign Out</button>
@@ -89,6 +107,21 @@
                 {{ session('success') }}
             </div>
         @endif
+
+        @if(session('error'))
+            <div x-data="{ show: true }"
+                 x-init="setTimeout(() => show = false, 4000)"
+                 x-show="show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-10"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 translate-y-10"
+                 class="toast-popup bg-rose-500">
+                {{ session('error') }}
+            </div>
+        @endif
         
         @yield('content')
     </main>
@@ -110,7 +143,7 @@
                 <i class="fab fa-linkedin hover:text-emerald-600 cursor-pointer"></i>
                 <i class="fab fa-instagram hover:text-emerald-600 cursor-pointer"></i>
             </div>
-            <p class="text-sm font-bold text-gray-400">© 2024 EcoFeed Smart Systems. All Rights Reserved.</p>
+            <p class="text-sm font-bold text-gray-400">&copy; 2024 EcoFeed Smart Systems. All rights reserved.</p>
         </div>
     </footer>
 </body>

@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Donation;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class ImpactSeeder extends Seeder
 {
@@ -15,7 +14,7 @@ class ImpactSeeder extends Seeder
         $donor = User::create([
             'name' => 'Green Valley Hotel',
             'email' => 'donor@example.com',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => 'donor',
             'organization_name' => 'Green Valley Hotels Group',
         ]);
@@ -24,9 +23,17 @@ class ImpactSeeder extends Seeder
         $ngo = User::create([
             'name' => 'City Charity',
             'email' => 'receiver@example.com',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => 'receiver',
             'organization_name' => 'City Hope Foundation',
+        ]);
+
+        User::create([
+            'name' => 'System Admin',
+            'email' => 'admin@example.com',
+            'password' => 'password',
+            'role' => 'admin',
+            'organization_name' => 'EcoFeed Operations',
         ]);
 
         // 3. Create Donations across months

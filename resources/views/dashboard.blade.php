@@ -11,19 +11,29 @@
                 <p class="text-gray-600">Welcome back, <span class="font-bold text-emerald-600">{{ Auth::user()->name }}</span>. Here is your redistribution overview.</p>
             </div>
             @if($role === 'donor')
-                <a href="{{ route('donations.create') }}" class="primary-btn">
-                    Post a Donation
-                </a>
+                <div class="flex gap-3">
+                    <a href="{{ route('donations.archive') }}" class="secondary-btn">
+                        View Archive
+                    </a>
+                    <a href="{{ route('donations.create') }}" class="primary-btn">
+                        Post a Donation
+                    </a>
+                </div>
             @endif
         </div>
 
         <!-- Quick Stats (Donor/Receiver specific) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 text-center">
             @if($role === 'donor')
                 <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Active Listings</p>
                     <p class="text-5xl font-extrabold text-gray-900 mb-2">{{ $activeListings }}</p>
                     <p class="text-sm font-bold text-emerald-600 uppercase">Available for claim</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Expired Listings</p>
+                    <p class="text-5xl font-extrabold text-gray-900 mb-2">{{ $expiredListings }}</p>
+                    <p class="text-sm font-bold text-amber-600 uppercase">Needs archive review</p>
                 </div>
                 <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Completed Rescues</p>
@@ -52,6 +62,53 @@
                     <a href="{{ route('donations.index') }}" class="text-xs font-bold underline hover:text-emerald-100">Browse Marketplace</a>
                 </div>
             @endif
+        </div>
+
+        <div class="mb-12 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-lg">
+            <div class="flex flex-col gap-3 border-b border-gray-100 bg-gray-50/50 p-8 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Notifications</h3>
+                    <p class="text-sm text-gray-500">Recent updates from your redistribution activity.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex w-fit items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-700">
+                        {{ $unreadNotificationsCount }} new
+                    </span>
+                    <a href="{{ route('notifications.index') }}" class="text-sm font-bold text-emerald-600 hover:underline">
+                        View all
+                    </a>
+                </div>
+            </div>
+
+            <div class="divide-y divide-gray-100">
+                @forelse($recentNotifications as $notification)
+                    <div class="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="font-semibold text-gray-900">{{ $notification->data['message'] ?? 'New activity update' }}</p>
+                            <p class="text-xs font-medium text-gray-400">{{ $notification->created_at->diffForHumans() }}</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            @if(! empty($notification->data['action_url']))
+                                <a href="{{ $notification->data['action_url'] }}" class="text-sm font-bold text-emerald-600 hover:underline">
+                                    View details
+                                </a>
+                            @endif
+                            @if(is_null($notification->read_at))
+                                <form action="{{ route('notifications.read', $notification) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="rounded-lg bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100">
+                                        Mark as Read
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-sm font-medium text-gray-400">
+                        No notifications yet. Claims and pickups will appear here.
+                    </div>
+                @endforelse
+            </div>
         </div>
 
         <!-- Activity Table (Based on Mockup Table Style) -->
@@ -105,9 +162,26 @@
                                                     Mark Picked Up
                                                 </button>
                                             </form>
+                                        @elseif($donation->display_status === 'expired')
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-700">
+                                                expired
+                                            </span>
+                                        @elseif($donation->status === 'available')
+                                            <div class="flex flex-wrap gap-2">
+                                                <a href="{{ route('donations.edit', $donation) }}" class="rounded-lg bg-sky-50 px-4 py-2 text-xs font-bold text-sky-600 transition hover:bg-sky-100">
+                                                    Edit
+                                                </a>
+                                                <form action="{{ route('donations.destroy', $donation) }}" method="POST" onsubmit="return confirm('Remove this donation listing?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="rounded-lg bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100">
+                                                        Remove
+                                                    </button>
+                                                </form>
+                                            </div>
                                         @else
-                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase {{ $donation->status === 'available' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' }}">
-                                                {{ $donation->status }}
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase {{ $donation->display_status === 'available' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                                {{ $donation->display_status }}
                                             </span>
                                         @endif
                                     </td>

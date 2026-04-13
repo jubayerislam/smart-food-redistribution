@@ -71,7 +71,7 @@
                         class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition"></i>
                     <input id="password" type="password" name="password" required
                         class="w-full p-3 pl-11 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-gray-50 font-medium"
-                        placeholder="••••••••">
+                        placeholder="Create a password">
                 </div>
                 <x-input-error :messages="$errors->get('password')" class="mt-2 text-xs font-bold text-red-500" />
             </div>
@@ -84,7 +84,7 @@
                         class="fas fa-shield-check absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition"></i>
                     <input id="password_confirmation" type="password" name="password_confirmation" required
                         class="w-full p-3 pl-11 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-gray-50 font-medium"
-                        placeholder="••••••••">
+                        placeholder="Confirm your password">
                 </div>
             </div>
         </div>

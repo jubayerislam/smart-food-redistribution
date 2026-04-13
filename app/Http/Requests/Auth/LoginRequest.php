@@ -3,11 +3,13 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -42,7 +44,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        try {
+            $authenticated = Auth::attempt($this->only('email', 'password'), $this->boolean('remember'));
+        } catch (RuntimeException $exception) {
+            $authenticated = $this->attemptLegacyPasswordLogin();
+        }
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -51,6 +59,39 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    protected function attemptLegacyPasswordLogin(): bool
+    {
+        $user = User::where('email', $this->string('email'))->first();
+
+        if (! $user || ! is_string($user->password) || $user->password === '') {
+            return false;
+        }
+
+        $candidateHashes = [$user->password];
+
+        foreach (['$2a$', '$2x$', '$2b$'] as $prefix) {
+            if (str_starts_with($user->password, $prefix)) {
+                $candidateHashes[] = '$2y$'.substr($user->password, 4);
+            }
+        }
+
+        foreach (array_unique($candidateHashes) as $candidateHash) {
+            if (! password_verify((string) $this->input('password'), $candidateHash)) {
+                continue;
+            }
+
+            $user->forceFill([
+                'password' => (string) $this->input('password'),
+            ])->save();
+
+            Auth::login($user, $this->boolean('remember'));
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -52,12 +52,42 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('donations.claim', $donation) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full mt-4 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-50">
-                            Claim Now
-                        </button>
-                    </form>
+                    @if(auth()->user()->role === 'receiver')
+                        <form action="{{ route('donations.claim', $donation) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full mt-4 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-50">
+                                Claim Now
+                            </button>
+                        </form>
+                    @elseif(auth()->id() === $donation->donor_id)
+                        <div class="mt-4 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">
+                            This is your listing
+                        </div>
+                    @else
+                        <div class="mt-4 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm font-semibold text-gray-500">
+                            Receiver accounts can claim this donation
+                        </div>
+                    @endif
+
+                    @if(auth()->id() !== $donation->donor_id && auth()->user()->role !== 'admin')
+                        <div class="mt-4 space-y-3 border-t border-gray-100 pt-4">
+                            <form action="{{ route('reports.donations.store', $donation) }}" method="POST" class="space-y-2">
+                                @csrf
+                                <input type="text" name="reason" required maxlength="1000" placeholder="Report this listing" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                                <button type="submit" class="w-full rounded-xl bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700 transition hover:bg-rose-100">
+                                    Report Listing
+                                </button>
+                            </form>
+
+                            <form action="{{ route('reports.users.store', $donation->donor) }}" method="POST" class="space-y-2">
+                                @csrf
+                                <input type="text" name="reason" required maxlength="1000" placeholder="Report this donor" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                                <button type="submit" class="w-full rounded-xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-200">
+                                    Report Donor
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             </div>
         @empty

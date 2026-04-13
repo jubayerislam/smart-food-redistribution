@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Donation;
 use App\Models\User;
@@ -77,14 +80,30 @@ Route::get('/impact', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/donations/{donation}/hide', [AdminController::class, 'hideDonation'])->name('admin.donations.hide');
+    Route::post('/admin/donations/{donation}/restore', [AdminController::class, 'restoreDonation'])->name('admin.donations.restore');
+    Route::post('/admin/users/{user}/suspend', [AdminController::class, 'suspendUser'])->name('admin.users.suspend');
+    Route::post('/admin/users/{user}/restore', [AdminController::class, 'restoreUser'])->name('admin.users.restore');
+    Route::post('/admin/reports/{report}/resolve', [AdminController::class, 'resolveReport'])->name('admin.reports.resolve');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 Route::middleware('auth')->group(function () {
     Route::get('/donate', [DonationController::class, 'create'])->name('donations.create');
     Route::post('/donate', [DonationController::class, 'store'])->name('donations.store');
+    Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit');
+    Route::patch('/donations/{donation}', [DonationController::class, 'saveChanges'])->name('donations.update');
+    Route::get('/donations/archive', [DonationController::class, 'archive'])->name('donations.archive');
+    Route::post('/donations/{donation}/relist', [DonationController::class, 'relist'])->name('donations.relist');
     Route::get('/marketplace', [DonationController::class, 'index'])->name('donations.index');
     Route::post('/marketplace/{donation}/claim', [DonationController::class, 'update'])->name('donations.claim');
     Route::post('/marketplace/{donation}/complete', [DonationController::class, 'complete'])->name('donations.complete');
+    Route::post('/reports/donations/{donation}', [ReportController::class, 'storeDonation'])->name('reports.donations.store');
+    Route::post('/reports/users/{user}', [ReportController::class, 'storeUser'])->name('reports.users.store');
+    Route::delete('/donations/{donation}', [DonationController::class, 'destroy'])->name('donations.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

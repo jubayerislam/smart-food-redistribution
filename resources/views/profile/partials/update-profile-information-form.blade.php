@@ -28,6 +28,22 @@
             <x-input-error class="mt-2 text-xs font-bold text-red-500" :messages="$errors->get('email')" />
         </div>
 
+        <div class="grid gap-6 md:grid-cols-2">
+            <div class="space-y-2">
+                <label for="organization_name" class="block text-sm font-semibold text-gray-700 ml-1">Organization Name</label>
+                <input id="organization_name" name="organization_name" type="text" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-gray-50 font-medium" value="{{ old('organization_name', $user->organization_name) }}" />
+                <x-input-error class="mt-2 text-xs font-bold text-red-500" :messages="$errors->get('organization_name')" />
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700 ml-1">Account Type</label>
+                <div class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 font-semibold capitalize text-gray-600">
+                    {{ $user->role }}
+                </div>
+                <p class="text-xs font-medium text-gray-400">Role changes stay locked to keep donation history consistent.</p>
+            </div>
+        </div>
+
         <div class="flex items-center gap-4 pt-4">
             <button type="submit" class="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 transition shadow-lg shadow-emerald-50">
                 {{ __('Save Changes') }}
